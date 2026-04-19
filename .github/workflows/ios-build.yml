@@ -11,4 +11,15 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npx expo export --platform ios
+      - name: Build Project
+        run: npx expo export --platform ios
+      - name: Create Dummy IPA for testing
+        run: |
+          mkdir -p Payload
+          cp -r dist Payload/ # Hoặc thư mục output của expo
+          zip -r app-unsigned.ipa Payload
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-app-ipa
+          path: app-unsigned.ipa
