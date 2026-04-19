@@ -10,16 +10,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
       - run: npm install
-      - name: Build Project
-        run: npx expo export --platform ios
-      - name: Create Dummy IPA for testing
+      - name: Build IPA Local
+        run: |
+          npm install -g eas-cli
+          # Lệnh này sẽ build ra file .app thô
+          npx expo run:ios --configuration Release --device --no-install
+      - name: Create IPA
         run: |
           mkdir -p Payload
-          cp -r dist Payload/ # Hoặc thư mục output của expo
-          zip -r app-unsigned.ipa Payload
+          mv build/Build/Products/Release-iphoneos/*.app Payload/
+          zip -r MyNewApp.ipa Payload
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: my-app-ipa
-          path: app-unsigned.ipa
+          name: ios-ipa
+          path: MyNewApp.ipa
