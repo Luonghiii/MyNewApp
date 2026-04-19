@@ -7,25 +7,27 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Setup Expo
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-      - run: npm install
-      - name: Build IPA Local
+          
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+        
+      - name: Install Dependencies
+        run: npm install
+        
+      - name: Build IPA Local (Bypass Cache)
         run: |
-          npm install -g eas-cli
-          # Lệnh này sẽ build ra file .app thô
-          npx expo run:ios --configuration Release --device --no-install
-      - name: Create IPA
-        run: |
+          # Dùng lệnh này để nó tự động tạo file app thô
+          npx expo export --platform ios
           mkdir -p Payload
-          mv build/Build/Products/Release-iphoneos/*.app Payload/
+          # Chỗ này tui dùng lệnh lùng sục file .app cho chắc
+          find . -name "*.app" -exec cp -r {} Payload/ \;
           zip -r MyNewApp.ipa Payload
+          
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
