@@ -4,32 +4,18 @@ on:
     branches: [ main ]
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          
       - name: Install EAS CLI
         run: npm install -g eas-cli
-        
-      - name: Install Dependencies
-        run: npm install
-        
-      - name: Build IPA Local (Bypass Cache)
+      - name: Build on Expo Cloud
         run: |
-          # Dùng lệnh này để nó tự động tạo file app thô
-          npx expo export --platform ios
-          mkdir -p Payload
-          # Chỗ này tui dùng lệnh lùng sục file .app cho chắc
-          find . -name "*.app" -exec cp -r {} Payload/ \;
-          zip -r MyNewApp.ipa Payload
-          
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-ipa
-          path: MyNewApp.ipa
+          # Lệnh này sẽ gửi code lên server Expo để build hộ
+          # Nó sẽ trả về link tải file .ipa xịn
+          eas build -p ios --profile preview --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
